@@ -73,12 +73,14 @@ func readEmailFile(filePath string) (Email, error) {
 		return Email{}, err
 	}
 
-	headerEnd := strings.IndexAny(string(content), "\n\r\n\r")
+	headerEnd := strings.Index(string(content), "\n\r")
+	fmt.Println(filePath)
 	if headerEnd == -1 {
 		return Email{}, fmt.Errorf("invalid email: %s", filePath)
 	}
 
 	headers := strings.Split(string(content[:headerEnd]), "\n")
+
 	body := string(content[headerEnd+2:])
 
 	email := Email{}
@@ -93,7 +95,7 @@ func readEmailFile(filePath string) (Email, error) {
 
 func parseHeaders(line string, email *Email) {
 	parts := strings.SplitN(line, ":", 2)
-	if len(parts) < 1 {
+	if len(parts) != 2 {
 		return
 	}
 
