@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,9 +30,14 @@ type Email struct {
 	Content                 string `json:"content"`
 }
 
+type Bulk struct {
+	Index   string  `json:"index"`
+	Records []Email `json:"records"`
+}
+
 func main() {
 	rootDir := "./data/enron_mail_20110402/maildir"
-	outputDir := "./output"
+	var emails []Email
 
 	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -46,18 +54,8 @@ func main() {
 			return nil
 		}
 
-		jsonData, err := json.Marshal(email)
-		if err != nil {
-			fmt.Printf("Error encoding email to JSON: %v\n", err)
-			return nil
-		}
-
-		outputFilePath := filepath.Join(outputDir, fmt.Sprintf("%s.json", email.MessageID[1:len(email.MessageID)-1]))
-
-		if err := os.WriteFile(outputFilePath, jsonData, os.ModePerm); err != nil {
-			fmt.Printf("Error writing JSON to file %s: %v\n", outputFilePath, err)
-			return err
-		}
+		emails = append(emails, email)
+		fmt.Printf("append: %s\n", email.MessageID)
 
 		return nil
 	})
@@ -65,6 +63,8 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error walking the directory: %v\n", err)
 	}
+
+	updateDataToZincSearch(emails)
 }
 
 func readEmailFile(filePath string) (Email, error) {
@@ -74,7 +74,7 @@ func readEmailFile(filePath string) (Email, error) {
 	}
 
 	headerEnd := strings.Index(string(content), "\n\r")
-	fmt.Println(filePath)
+
 	if headerEnd == -1 {
 		return Email{}, fmt.Errorf("invalid email: %s", filePath)
 	}
@@ -134,4 +134,42 @@ func parseHeaders(line string, email *Email) {
 	case "X-FileName":
 		email.XFilename = headerValue
 	}
+}
+
+func updateDataToZincSearch(emails []Email) {
+	emailData := Bulk{
+		Index:   "emails",
+		Records: emails,
+	}
+
+	jsonData, err := json.Marshal(emailData)
+	if err != nil {
+		fmt.Printf("Error encoding to JSON: %v\n", err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", "http://localhost:4080/api/_bulkv2", bytes.NewReader(jsonData))
+	if err != nil {
+		fmt.Printf("Error creating the request: %v\n", err)
+	}
+
+	req.SetBasicAuth("admin", "Complexpass#123")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return
+	}
+
+	fmt.Println(string(body))
 }
