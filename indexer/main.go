@@ -64,7 +64,7 @@ func main() {
 		fmt.Printf("Error walking the directory: %v\n", err)
 	}
 
-	updateDataToZincSearch(emails)
+	uploadDataToZincSearch(emails)
 }
 
 func readEmailFile(filePath string) (Email, error) {
@@ -136,7 +136,7 @@ func parseHeaders(line string, email *Email) {
 	}
 }
 
-func updateDataToZincSearch(emails []Email) {
+func uploadDataToZincSearch(emails []Email) {
 	emailData := Bulk{
 		Index:   "emails",
 		Records: emails,
