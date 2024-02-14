@@ -1,5 +1,5 @@
 <template>
-  <DataTable :value="employees" showGridlines paginator :rows="3" tableStyle="min-width: 50rem">
+  <DataTable :value="employees" showGridlines stripedRows paginator :rows="3" tableStyle="min-width: 50rem">
     <Column field="message_id" header="Id"></Column>
     <Column field="subject" header="Subject"></Column>
     <Column field="from" header="From"></Column>
@@ -10,13 +10,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { EmailService } from './service/EmailService';
+import EmailService from './service/EmailService';
 
 onMounted(() => {
-  EmailService.searchEmails().then((data) => (employees.value = data));
+  EmailService.searchEmails("days").then((data) => (employees.value = data.emails));
 });
 
-const employees = ref();
+const employees = ref([]);
 
 </script>
 
