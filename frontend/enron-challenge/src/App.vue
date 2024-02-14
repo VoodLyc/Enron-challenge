@@ -1,21 +1,23 @@
 <template>
-  <img class="mx-auto" alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <DataTable :value="employees" showGridlines paginator :rows="3" tableStyle="min-width: 50rem">
+    <Column field="message_id" header="Id"></Column>
+    <Column field="subject" header="Subject"></Column>
+    <Column field="from" header="From"></Column>
+    <Column field="to" header="To"></Column>
+    <Column field="content" header="Content"></Column>
+  </DataTable>
 </template>
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
+<script setup>
+import { ref, onMounted } from 'vue';
+import { EmailService } from './service/EmailService';
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+onMounted(() => {
+  EmailService.searchEmails().then((data) => (employees.value = data));
+});
+
+const employees = ref();
+
 </script>
 
-<style>
-#app {
-  @apply text-center py-10
-}
-</style>
+<style></style>

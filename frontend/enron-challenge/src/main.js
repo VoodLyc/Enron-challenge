@@ -1,6 +1,17 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import 'primevue/resources/themes/aura-light-green/theme.css'
 import './style.css'
+import PrimeVue from 'primevue/config';
+import Wind from './presets/wind';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
 
-createApp(App).mount('#app')
+
+const app = createApp(App);
+app.use(PrimeVue, {
+    unstyled: true,
+    pt: Wind
+});
+app.component('DataTable', DataTable);
+app.component('Column', Column);
+app.mount('#app');
