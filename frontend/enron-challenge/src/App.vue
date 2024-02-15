@@ -16,7 +16,7 @@
       <Column field="subject" header="Subject"></Column>
       <Column field="from" header="From"></Column>
       <Column field="to" header="To"></Column>
-      <Column header="Content">
+      <Column header="Content" class="w-1/2">
         <template #body="{ data }">
           <span class="whitespace-pre-line">{{ data.content }}</span>
         </template>
