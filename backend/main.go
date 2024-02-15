@@ -16,8 +16,8 @@ func main() {
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Origin", "Content-Type", "Accept"},
 	}))
-	r.Get("/", controller.Index)
-	r.Get("/search", controller.Search)
+	r.Get("/emails", controller.GetEmails)
+	r.Get("/emails/search", controller.Search)
 
 	http.ListenAndServe(":8080", r)
 }

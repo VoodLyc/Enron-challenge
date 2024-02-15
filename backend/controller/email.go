@@ -7,23 +7,15 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
-
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello there %s", "visitor")
-}
 
 func Search(w http.ResponseWriter, r *http.Request) {
 	term := r.URL.Query().Get("term")
-	data, err := json.Marshal(searchEmails(term))
-	if err != nil {
-		fmt.Println("Error encoding struct to JSON:", err)
-		return
+	from := r.URL.Query().Get("from")
+	if from == "" {
+		from = "0"
 	}
-	fmt.Fprint(w, string(data))
-}
-
-func searchEmails(term string) model.SearchResponse {
 	query := `{
         "search_type": "match",
         "query":
@@ -31,10 +23,44 @@ func searchEmails(term string) model.SearchResponse {
             "term": "` + term + `",
 			"field": "_all"
         },
-        "from": 0,
+        "from": ` + from + `,
         "max_results": 20,
         "_source": []
     }`
+	makeSearchRequest(w, query)
+}
+
+func GetEmails(w http.ResponseWriter, r *http.Request) {
+	currentTime := time.Now().UTC()
+	formattedTime := currentTime.Format("2006-01-02T15:04:05.999Z")
+	from := r.URL.Query().Get("from")
+	if from == "" {
+		from = "0"
+	}
+	query := `{
+		"search_type": "daterange",
+		"query": {
+			"start_time": "2021-12-25T15:08:48.777Z",
+			"end_time": "` + formattedTime + `"
+		},
+		"sort_fields": ["-@timestamp"],
+		"from": ` + from + `,
+		"max_results": 20,
+		"_source": []
+	}`
+	makeSearchRequest(w, query)
+}
+
+func makeSearchRequest(w http.ResponseWriter, query string) {
+	data, err := json.Marshal(searchEmails(query))
+	if err != nil {
+		fmt.Println("Error encoding struct to JSON:", err)
+		return
+	}
+	fmt.Fprint(w, string(data))
+}
+
+func searchEmails(query string) model.SearchResponse {
 	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails/_search", strings.NewReader(query))
 	if err != nil {
 		panic(err)
@@ -59,7 +85,7 @@ func searchEmails(term string) model.SearchResponse {
 		fmt.Println(err)
 	}
 
-	emails := getEmails(searchBody)
+	emails := getEmailsFromBody(searchBody)
 
 	return model.SearchResponse{
 		Took:   searchBody.Took,
@@ -68,7 +94,7 @@ func searchEmails(term string) model.SearchResponse {
 	}
 }
 
-func getEmails(searchBody model.SearchBody) []model.Email {
+func getEmailsFromBody(searchBody model.SearchBody) []model.Email {
 
 	emails := []model.Email{}
 

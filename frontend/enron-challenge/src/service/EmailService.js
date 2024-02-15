@@ -7,9 +7,19 @@ class EmailService {
         });
     }
 
-    async searchEmails(term) {
+    async getEmails(from) {
         try {
-            const response = await this.http.get(`/search?term=${term}`);
+            const response = await this.http.get(`/emails?from=${from}`);
+            return response.data;
+        } catch (err) {
+            console.error('Error fetching data', err);
+            throw err;
+        } 
+    }
+
+    async searchEmails(term, from) {
+        try {
+            const response = await this.http.get(`/emails/search?term=${term}&from=${from}`);
             return response.data;
         } catch (err) {
             console.error('Error fetching data', err);
