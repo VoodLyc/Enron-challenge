@@ -21,10 +21,15 @@ func Search(w http.ResponseWriter, r *http.Request) {
         "query":
         {
             "term": "` + term + `",
-			"field": "_all"
+			"field": "content"
         },
         "from": ` + from + `,
         "max_results": 20,
+		"highlight": {
+			"fields": {
+			  "content": {}
+			}
+		},
         "_source": []
     }`
 	makeSearchRequest(w, query)
@@ -99,7 +104,10 @@ func getEmailsFromBody(searchBody model.SearchBody) []model.Email {
 	emails := []model.Email{}
 
 	for _, hit := range searchBody.Hits.Hits {
-		emails = append(emails, hit.Source)
+		email := hit.Source
+		email.Highlight = hit.Highlight
+
+		emails = append(emails, email)
 	}
 
 	return emails

@@ -12,7 +12,6 @@
       :totalRecords="totalRecords" :loading="loading" @page="onPage($event)" :rowsPerPageOptions="[5, 10, 20]"
       paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
       currentPageReportTemplate="{first} to {last} of {totalRecords}">
-      <Column field="message_id" header="Id"></Column>
       <Column field="subject" header="Subject"></Column>
       <Column field="from" header="From"></Column>
       <Column field="to" header="To"></Column>
@@ -20,6 +19,11 @@
         <template #body="{ data }">
           <span class="whitespace-pre-line">{{ data.content }}</span>
         </template>
+      </Column>
+      <Column  v-if="filtered" header="Highlight">
+      <template #body="{data}">
+        <span v-html="data.highlight.content"></span>
+      </template>
       </Column>
     </DataTable>
   </div>

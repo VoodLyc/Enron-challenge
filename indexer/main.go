@@ -39,6 +39,8 @@ func main() {
 	rootDir := "./data/enron_mail_20110402/maildir"
 	var emails []Email
 
+	createIndex()
+
 	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -56,6 +58,10 @@ func main() {
 
 		emails = append(emails, email)
 		fmt.Printf("append: %s\n", email.MessageID)
+		if len(emails) >= 5000 {
+			uploadDataToZincSearch(emails)
+			emails = nil
+		}
 
 		return nil
 	})
@@ -134,6 +140,39 @@ func parseHeaders(line string, email *Email) {
 	case "X-FileName":
 		email.XFilename = headerValue
 	}
+}
+
+func createIndex() {
+	index, err := os.ReadFile("./index.json")
+	if err != nil {
+		fmt.Println("Error reading JSON file:", err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", "http://localhost:4080/api/index", bytes.NewReader(index))
+	if err != nil {
+		fmt.Printf("Error creating the request: %v\n", err)
+	}
+
+	req.SetBasicAuth("admin", "Complexpass#123")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return
+	}
+
+	fmt.Println(string(body))
 }
 
 func uploadDataToZincSearch(emails []Email) {

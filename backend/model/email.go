@@ -17,6 +17,9 @@ type Email struct {
 	XOrigin                 string `json:"x_origin"`
 	XFilename               string `json:"x_filename"`
 	Content                 string `json:"content"`
+	Highlight               struct {
+		Content []string `json:"content"`
+	} `json:"highlight"`
 }
 
 type Hit struct {
