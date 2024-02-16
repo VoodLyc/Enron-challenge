@@ -36,6 +36,18 @@ type Bulk struct {
 }
 
 func main() {
+	// CPU profiling
+	// f, err := os.Create("cpu_profile.prof")
+	// if err != nil {
+	// 	log.Fatal("could not create CPU profile: ", err)
+	// }
+	// defer f.Close()
+
+	// if err := pprof.StartCPUProfile(f); err != nil {
+	// 	log.Fatal("could not start CPU profile: ", err)
+	// }
+	// defer pprof.StopCPUProfile()
+
 	rootDir := "./data/enron_mail_20110402/maildir"
 	var emails []Email
 
