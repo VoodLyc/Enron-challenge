@@ -66,7 +66,7 @@ func makeSearchRequest(w http.ResponseWriter, query string) {
 }
 
 func searchEmails(query string) model.SearchResponse {
-	req, err := http.NewRequest("POST", "http://localhost:4080/api/emails/_search", strings.NewReader(query))
+	req, err := http.NewRequest("POST", "http://db:4080/api/emails/_search", strings.NewReader(query))
 	if err != nil {
 		panic(err)
 	}

@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  db: 
+    image: public.ecr.aws/zinclabs/zincsearch:latest
+    volumes:
+      - ./indexer:/zincsearch_data
+    environment:
+      - ZINC_DATA_PATH=/zincsearch_data
+      - ZINC_FIRST_ADMIN_USER=admin
+      - ZINC_FIRST_ADMIN_PASSWORD=Complexpass#123
+    ports:
+      - '4080:4080'
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+  frontend:
+    build:
+      context: ./frontend/enron-challenge
+    ports:
+      - '5173:5173'
+    depends_on:
+      - backend
